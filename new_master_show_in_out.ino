@@ -32,10 +32,10 @@ void loop() {
         currentCount++;  // Entry completed
         totalIn++;       // Increment total entries
       } else if (responseFromSlave == 2) {
-        if (currentCount > 0) {
+//        if (currentCount > 0) {
           currentCount--;  // Exit completed, only if currentCount is greater than 0
           totalOut++;      // Increment total exits
-        }
+//        }
       }
       // Response 0 indicates no action, so we do nothing
     }
