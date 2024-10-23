@@ -30,7 +30,7 @@ unsigned long sensor1TriggerTime = 0;
 unsigned long sensor2TriggerTime = 0;
 const unsigned long maxPassingTime = 10000; // 10 seconds max to pass through the gate
 const unsigned long cooldownTime = 1000;    // 1 second cooldown period
-const unsigned long wifiTimeout = 2000;    // 10 seconds max to connect to Wi-Fi
+const unsigned long wifiTimeout = 1000;    // 10 seconds max to connect to Wi-Fi
 const unsigned long wifiRetryInterval = 30000; // Retry Wi-Fi every 60 seconds
 
 unsigned long lastActionTime = 0;      // Time of the last entry/exit action
@@ -56,16 +56,15 @@ void setup() {
   delay(2000);
   lcd.clear();
 
-  // Start non-blocking Wi-Fi connection
   connectToWiFi();
 }
 
 void loop() {
   unsigned long currentTime = millis();
   
-  // Handle Wi-Fi reconnection attempts every wifiRetryInterval (e.g., 60 seconds) without blocking the main loop
+  // Handle Wi-Fi reconnection attempts every wifiRetryInterval (e.g., 60 seconds)
   if (!wifiConnected && currentTime - lastWiFiCheckTime >= wifiRetryInterval) {
-    connectToWiFi();  // Attempt to connect to Wi-Fi
+    connectToWiFi();
     lastWiFiCheckTime = currentTime;
   }
 
@@ -139,12 +138,10 @@ void connectToWiFi() {
   lcd.clear();
   lcd.print("Connecting WiFi");
   
-  // Non-blocking Wi-Fi connection attempt
+  // Attempt to connect for wifiTimeout duration
   while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < wifiTimeout) {
-    delay(10); // Very short delay so that the main loop continues
-    if (WiFi.status() == WL_CONNECTED) {
-      break;  // Break out if Wi-Fi is connected within the timeout
-    }
+    delay(1000);
+    Serial.print(".");
   }
 
   // Check Wi-Fi status
@@ -152,7 +149,7 @@ void connectToWiFi() {
     wifiConnected = true;
     Serial.println("Wi-Fi Connected!");
     lcd.clear();
-    lcd.print("WiFi Connected");
+//    lcd.print("WiFi Connected");
     delay(500);
     updateLCD();
 
@@ -176,18 +173,14 @@ void connectToWiFi() {
 
 void sendData() {
   // Create a unique message using the counter
-//  String message = "In: " + String(totalIn) + " Out: " + String(totalOut);
-//  String totalMessage = "Total: " + String(peopleCount);
-  String message = "In: " + String(totalIn) + " Out: " + String(totalOut) + " Total In: " + String(peopleCount);
-
+  String message = "In: " + String(totalIn) + " Out: " + String(totalOut)+ " Total: " + String(peopleCount);
+  
   // Print the message to the serial monitor
   Serial.println(message);
-//  Serial.println(totalMessage);
-
+  
   // Send the message to the Blynk app on Virtual Pin V0 only if connected
   if (wifiConnected && blynkConnected) {
     Blynk.virtualWrite(V0, message.c_str());
-//    Blynk.virtualWrite(V1, totalMessage.c_str()); 
   }
 }
 
